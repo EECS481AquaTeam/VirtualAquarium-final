@@ -37,7 +37,7 @@ public class ProtectGame : MonoBehaviour {
 				// if y is a value that if it was negative would not make the object more
 				// than 30 degrees below the horizontal, then randomly flip the sign
 				if (y < 50 * Mathf.Sin(0.523599f))
-					y = (Random.value > 0.5) ? y : -y;
+					y = (Random.value > 0.75) ? y : -y;
 			else if (x == 0)
 				y = 50;
 
