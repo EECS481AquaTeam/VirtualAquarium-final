@@ -15,7 +15,7 @@ public class GrowingTeamGame : MonoBehaviour
 	
 	public GameObject left;		// the left fish in the game
 	public GameObject right;	// the right fish in the game
-	
+
 	private DateTime last;		// the last time that a fish has grown or shrunk
 	
 	// locations for the fish on and off screen
@@ -32,7 +32,7 @@ public class GrowingTeamGame : MonoBehaviour
 		right = Instantiate (right);
 		Utility.InitializeFish (left, offscreenLeft);
 		Utility.InitializeFish (right, offscreenRight);
-		
+
 		MoveOnScreen ();
 		
 		UpdateTime ();			 // set the initial time of the game
