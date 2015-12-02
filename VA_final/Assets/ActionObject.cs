@@ -18,6 +18,8 @@ public class ActionObject : MonoBehaviour {
 	{
 		targetLocation = pos = Utility.GetRandomVector (15);
 		speed = Random.Range (5,8);
+
+		SetScale ();
 	}
 	
 	// to initialize the location of an object, call Insantiate(x); followed by x.Initialize(position, speed);
@@ -54,7 +56,13 @@ public class ActionObject : MonoBehaviour {
 	{
 		return moving;
 	}
-	
+
+	private void SetScale()
+	{
+		if (tag == "whale")
+			scale = new Vector3 (1.5f, 1.5f, 1.5f);
+	}
+
 	// Scales the object by increase 
 	public void Grow (float increase=INCREASE_FACTOR)
 	{
