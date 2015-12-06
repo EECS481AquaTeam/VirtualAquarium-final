@@ -30,8 +30,9 @@ public class ActionObject : MonoBehaviour {
 	}
 	
 	// Move the object towards the 
-	public virtual void Update()
+	public void Update()
 	{
+
 		// If the object isn't at its target location, move towards it
 		if (!Utility.V3Equal (pos, targetLocation)) {
 			MoveTowardsTarget (targetLocation);
@@ -60,7 +61,7 @@ public class ActionObject : MonoBehaviour {
 	private void SetScale()
 	{
 		if (tag == "whale")
-			scale = new Vector3 (1.5f, 1.5f, 1.5f);
+			scale = new Vector3 (1f, 1f, 1f);
 	}
 
 	// Scales the object by increase 
