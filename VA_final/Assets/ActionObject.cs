@@ -60,7 +60,7 @@ public class ActionObject : MonoBehaviour {
 	private void SetScale()
 	{
 		if (tag == "whale")
-			scale = new Vector3 (1.5f, 1.5f, 1.5f);
+			scale = new Vector3 (1f, 1f, 1f);
 	}
 
 	// Scales the object by increase 
