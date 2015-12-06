@@ -30,7 +30,7 @@ public class ActionObject : MonoBehaviour {
 	}
 	
 	// Move the object towards the 
-	public virtual void Update()
+	public void Update()
 	{
 		// If the object isn't at its target location, move towards it
 		if (!Utility.V3Equal (pos, targetLocation)) {
