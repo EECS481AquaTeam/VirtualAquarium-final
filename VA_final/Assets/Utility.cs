@@ -3,17 +3,11 @@ using System.Collections;
 
 static public class Utility {
 	private const double EQUAL_VECTORS = 0.01;	// 3d vectors are considered to be equal if the magnitude of their differences < EQUAL_VECTORS
-
-	public const float OFFSET = 5;	// The offset of the camera in the x and y 
-
-	public const float Z = 0;	// The value that any game objects should have in the Z direction
-
-	static public bool kinectClickedOn = false;
-
-	// Initializes the speed and locations of a fish
-	static public void InitializeFish(GameObject item, Vector3 location, float speed=5f)
+	
+	// Initializes the location of a fish
+	static public void InitializeFish(GameObject item, Vector3 location)
 	{
-		item.GetComponent<ActionObject> ().Initialize (location, speed);
+		item.GetComponent<ActionObject>().Initialize(location, 5f);
 	}
 	
 	static public void MoveHelper(GameObject g1, Vector3 v1, GameObject g2, Vector3 v2)
@@ -35,11 +29,18 @@ static public class Utility {
 	}
 	
 	// Returns a 3d vector with random values in the x, y and z plains within the given range
-	static public Vector3 GetRandomVector(int range=5)
+	static public Vector3 GetRandomVector(int range=10)
 	{
-		return new Vector3(Random.Range (-range, range)+OFFSET,
-		                   Random.Range (-range, range)+OFFSET,
-		                   Random.Range (-range, range)+OFFSET);
+		return new Vector3(Random.Range (0, range),
+		                   Random.Range (0, range),
+		                   0);
+	}
+
+	static public Vector3 GetRandomVector(float xMin, float xMax, float yMin, float yMax)
+	{
+		return new Vector3(Random.Range (xMin, xMax),
+		                   Random.Range (yMin, yMax),
+		                   0);
 	}
 	
 }
