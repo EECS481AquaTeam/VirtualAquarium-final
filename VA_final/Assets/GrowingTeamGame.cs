@@ -49,7 +49,12 @@ public class GrowingTeamGame : MonoBehaviour
 	// Runs once per frame
 	void Update()
 	{
-		
+		Animation a = left.GetComponent<Animation> ();
+		if (!a.isPlaying) {
+//			print ("not playing");
+//			left.GetComponent<Whale>().Swim();
+		}
+
 		// If it hasn't been half a second since the last action, don't do anything
 		if ((DateTime.Now - last).TotalSeconds < 0.5f)
 			return;

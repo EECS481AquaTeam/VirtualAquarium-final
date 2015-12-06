@@ -22,10 +22,10 @@ public class AquariumGame : MonoBehaviour {
 	public Vector3 onscreenPos;
 	//public Vector3 startPos = new Vector3(12,3,1);
 	
-	//public Vector3 clickedPos = new Vector3 (-100, -100, -100); //kevin
+	public Vector3 clickedPos = new Vector3 (-100, -100, -100); //kevin
 	//public bool kinectClickedOn = false;
 	
-	private AquariumMusic music;  // how this module plays music in the application
+//	private AquariumMusic music;  // how this module plays music in the application
 	
 	public bool end = false;
 	
@@ -34,10 +34,10 @@ public class AquariumGame : MonoBehaviour {
 	public whaleClass[] whaleList2 = new whaleClass[numObjects];
 	
 	void Start() {
-		if (GetComponent<Main> ().enabled)
-			GetComponent<Main> ().enabled = false;
-		
-		music = GetComponent<AquariumMusic>();
+//		if (GetComponent<Main> ().enabled)
+//			GetComponent<Main> ().enabled = false;
+//		
+//		music = GetComponent<AquariumMusic>();
 		
 		Debug.Log ("Start");
 	}
@@ -46,8 +46,8 @@ public class AquariumGame : MonoBehaviour {
 	{
 		Debug.Log ("Aquarium Game Enabled");
 		
-		if (GetComponent<Main>().enabled)
-			GetComponent<Main>().enabled = false;
+//		if (GetComponent<Main>().enabled)
+//			GetComponent<Main>().enabled = false;
 		
 		for (int i = 0; i < numObjects; ++i) {
 			ws2[i] = Instantiate(ws2[i]);
@@ -66,10 +66,10 @@ public class AquariumGame : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		foreach (whaleClass w in whaleList2) {
-			if (w.whale.GetComponent<ActionObject>().ClickedOn(/*kinectClickedOn, clickedPos*/)) {
+			if (w.whale.GetComponent<ActionObject>().ClickedOn(clickedPos)) {
 				w.targetPos = Utility.GetRandomVector(0f,5f,5f,10f);
 				w.whale.GetComponent<ActionObject>().MoveTowardsTarget(w.targetPos);
-				music.PlayFeedback(music.pos);
+//				music.PlayFeedback(music.pos);
 			}
 			if (Utility.V3Equal(w.whale.GetComponent<ActionObject>().pos, w.targetPos)) {
 				w.targetReached = true;
@@ -84,7 +84,7 @@ public class AquariumGame : MonoBehaviour {
 		//kinectClickedOn = false;
 		if (lineCount == numObjects) {
 			GetComponent<AquariumGame> ().enabled = false;
-			GetComponent<Main> ().enabled = true;
+//			GetComponent<Main> ().enabled = true;
 			
 			foreach (whaleClass w in whaleList2) {
 				Vector3 off = new Vector3(-4,0,0);

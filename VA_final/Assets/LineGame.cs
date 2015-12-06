@@ -28,9 +28,9 @@ public class LineGame : MonoBehaviour {
 	
 	public Vector3 onscreenPos;
 	
-	private AquariumMusic music;  // how this module plays music in the application
+//	private AquariumMusic music;  // how this module plays music in the application
 	
-	//public Vector3 clickedPos = new Vector3 (-100, -100, -100); //kevin
+	public Vector3 clickedPos = new Vector3 (-100, -100, -100); //kevin
 	//public bool kinectClickedOn = false;
 	
 	public bool end = false;
@@ -42,10 +42,10 @@ public class LineGame : MonoBehaviour {
 	public whaleWithState[] whaleList = new whaleWithState[4];
 	
 	void Start() {
-		if (GetComponent<Main> ().enabled)
-			GetComponent<Main> ().enabled = false;
+//		if (GetComponent<Main> ().enabled)
+//			GetComponent<Main> ().enabled = false;
 		
-		music = GetComponent<AquariumMusic> ();
+//		music = GetComponent<AquariumMusic> ();
 		Debug.Log ("Start");
 	}
 	
@@ -53,8 +53,8 @@ public class LineGame : MonoBehaviour {
 	{
 		Debug.Log ("Line Game Enabled");
 		end = false;
-		if (GetComponent<Main>().enabled)
-			GetComponent<Main>().enabled = false;
+//		if (GetComponent<Main>().enabled)
+//			GetComponent<Main>().enabled = false;
 		
 		targetPos = new Vector3(2.7f,2.5f,0);
 		for (int i = 0; i < 4; ++i) {
@@ -83,7 +83,7 @@ public class LineGame : MonoBehaviour {
 				w.whale.GetComponent<ActionObject>().MoveTowardsTarget(offscreenPos);
 			}
 			GetComponent<LineGame>().enabled = false;
-			GetComponent<Main>().enabled = true;
+//			GetComponent<Main>().enabled = true;
 		}
 		else {
 			//			audioIsPlaying = false;
@@ -92,7 +92,7 @@ public class LineGame : MonoBehaviour {
 				switch (w.state) {
 				case objectState.NORMAL:
 					/*kinectClickedOn, clickedPos*/
-					if (script.ClickedOn ()) {
+					if (script.ClickedOn (clickedPos)) {
 						w.state = objectState.MOVINGTO;
 						script.MoveTowardsTarget(w.targetPos);
 						break;
@@ -104,7 +104,7 @@ public class LineGame : MonoBehaviour {
 						lineCount++;
 						if (lineCount == numObjects) {
 							//all objects must dive
-							music.PlayFeedback(music.neg);
+//							music.PlayFeedback(music.neg);
 							foreach (whaleWithState item in whaleList) {
 								item.state = objectState.SHOULD_DIVE;
 							}
