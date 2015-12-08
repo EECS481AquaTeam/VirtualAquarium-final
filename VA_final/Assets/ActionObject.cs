@@ -8,16 +8,22 @@ public class ActionObject : MonoBehaviour {
 	private const float NORMAL_SIZE = 1.0f;		// The normal scale of an object
 	private const int OBJECT_RADIUS = 50;			// How far around an object is considered touching the object
 	
-	private Vector3 targetLocation;		// Where this object is aiming to go
-	private float speed;				// How fast the object should move in a direction
-	private bool moving;				// If the object is moving or not
+	private Vector3 targetLocation;		   // Where this object is aiming to go
+	private Quaternion targetRotation; 	   // Which direction this object is aiming to turn
+	private float speed;				   // How fast the object should move in a direction
+	private bool moving;				   // If the object is moving or not
+	private bool rotatedInPlace = false;   // If the object has been rotated into a reasonable direction while standing still
+	private Vector3 directionOfMotion;	   // The direction that the object should be facing
 	
-	private bool destroyable = true;	// If the object should be destroyed when it is outside the screen
+	private bool destroyable = true;	   // If the object should be destroyed when it is outside the screen
+	private bool rotatable = true;		   // If the object should could be rotated
 	
 	public virtual void Awake()
 	{
 		targetLocation = pos = Utility.GetRandomVector (15);
 		speed = Random.Range (5,8);
+
+		SetRotation ();
 
 		SetScale ();
 	}
@@ -34,33 +40,50 @@ public class ActionObject : MonoBehaviour {
 	{
 		// If the object isn't at its target location, move towards it
 		if (!Utility.V3Equal (pos, targetLocation)) {
-			MoveTowardsTarget (targetLocation);
 			moving = true;
-		} else
+			MoveTowardsTarget (targetLocation);
+			rotatedInPlace = false;
+			directionOfMotion = targetLocation - pos;
+			if (tag == "whale")
+				directionOfMotion = -directionOfMotion;
+		} else {
+			if (!rotatedInPlace) {
+				SetRotation ();
+			}
 			moving = false;
+		}
+
+		// If the object isn't at its target rotation, rotate towards it
+		float rotationAngle = Quaternion.Angle (rotation, targetRotation);
+		if (!moving) {
+			if (rotationAngle > 2.0f && rotationAngle < 178.0f)
+				RotateTowardsTarget ();
+		} else {
+			RotateTowardsTarget ();
+		}
 
 		// If the object is outside of the frame of the camera
 		if (OutsideCamera () && destroyable) {
 			Destroy (gameObject);
-			print ("Object destroyed!");
+			Debug.Log ("Object destroyed!");
 		}
 	}
-	
-	// Sets the value of destroyable of false so that the object will not be destroyed when it is outside the camera
+
+	// Sets the value of destroyable to false so that the object will not be destroyed when it is outside the camera
 	public void MakeUndestroyable()
 	{
 		destroyable = false;
+	}
+
+	// Sets the value of rotatable to false so that the object will never be rotated
+	public void MakeUnrotateable()
+	{
+		rotatable = false;
 	}
 	
 	public bool IsMoving()
 	{
 		return moving;
-	}
-
-	private void SetScale()
-	{
-		if (tag == "whale")
-			scale = new Vector3 (1f, 1f, 1f);
 	}
 
 	// Scales the object by increase 
@@ -80,18 +103,6 @@ public class ActionObject : MonoBehaviour {
 	{
 		scale = new Vector3 (size, size, size);
 	}
-
-// TODO: remove this if not in use
-//	// Update the location by 1 unit of time
-//	public void Move() {
-//		Vector3 tempPos = pos;
-//		tempPos.x += speed * Time.deltaTime;
-//		tempPos.y += speed * Time.deltaTime;
-//		tempPos.z += speed * Time.deltaTime;
-//		pos = tempPos;
-//		moving = true;
-//	}
-//	
 
 	// Moves towards the target, and sets the object to move towards the targetPosition
 	public void MoveTowardsTarget(Vector3 targetPosition) {
@@ -141,8 +152,53 @@ public class ActionObject : MonoBehaviour {
 		        pos.y > max ||
 		        pos.y < min);
 	}
+
+	// Sets the scale for each object based on the specfic prefab and how big it should be
+	private void SetScale()
+	{
+		switch (tag) {
+		case "whale":
+			scale = new Vector3 (1f, 1f, 1f);
+			break;
+		case "cruscarp":
+			scale = new Vector3 (10f, 10f, 10f);
+			break;
+		default:
+			break;
+		}
+	}
+
+	// Sets the rotation of the object either to a resting rotation or towards the target location
+	private void RotateTowardsTarget()
+	{
+		if (!rotatable)
+			return;
+		targetRotation = Quaternion.LookRotation(directionOfMotion);
+		Vector3 temp = Vector3.RotateTowards(transform.forward, directionOfMotion, 100*Mathf.Deg2Rad*Time.deltaTime, 0.0f);
+		rotation = Quaternion.LookRotation (temp);
+	}
 	
-	// Getter & setter for scale of the object
+	private void SetRotation() 
+	{
+		if (!rotatable)
+			return;
+		
+		// A rotation has already been set in place
+		if (rotatedInPlace)
+			return;
+		
+		rotatedInPlace = true;
+		
+		float offset = Random.value > 0.5f ? -100f : 100f;
+		Vector3 temp = new Vector3(pos.x + offset, pos.y, pos.z) - pos;
+		directionOfMotion = temp - pos;
+		if (tag == "whale")
+			directionOfMotion = -directionOfMotion;
+		
+		targetRotation = Quaternion.LookRotation(directionOfMotion);
+	}
+
+	/* Getters & Setters */
 	public Vector3 scale
 	{
 		get {
@@ -151,14 +207,20 @@ public class ActionObject : MonoBehaviour {
 			transform.localScale = value;
 		}
 	}
-	
-	// Getter & setter for position of the object
 	public Vector3 pos {
 		get {
 			return (transform.position);
 		}
 		set {
 			transform.position = value;
+		}
+	}
+	public Quaternion rotation {
+		get {
+			return (transform.rotation);
+		}
+		set {
+			transform.rotation = value;
 		}
 	}
 }

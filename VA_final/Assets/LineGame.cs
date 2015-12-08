@@ -28,12 +28,10 @@ public class LineGame : MonoBehaviour {
 	
 	public Vector3 onscreenPos;
 	
-//	private AquariumMusic music;  // how this module plays music in the application
+	//	private AquariumMusic music;  // how this module plays music in the application
 	
 	public Vector3 clickedPos = new Vector3 (-100, -100, -100); //kevin
 	//public bool kinectClickedOn = false;
-	
-	public bool end = false;
 	
 	public Vector3 whalePos;
 	
@@ -42,19 +40,7 @@ public class LineGame : MonoBehaviour {
 	public whaleWithState[] whaleList = new whaleWithState[4];
 	
 	void Start() {
-//		if (GetComponent<Main> ().enabled)
-//			GetComponent<Main> ().enabled = false;
-//		
-//		music = GetComponent<AquariumMusic> ();
 		Debug.Log ("Start");
-	}
-	
-	void OnEnable()
-	{
-		Debug.Log ("Line Game Enabled");
-		end = false;
-//		if (GetComponent<Main>().enabled)
-//			GetComponent<Main>().enabled = false;
 		
 		targetPos = new Vector3(2.7f,2.5f,0);
 		for (int i = 0; i < 4; ++i) {
@@ -71,122 +57,80 @@ public class LineGame : MonoBehaviour {
 		}
 	}
 	
-	// Initializes the location of a fish
-	void InitializeFish(GameObject item, Vector3 location)
-	{
-		item.GetComponent<ActionObject>().Initialize(location, 5f);
-	}
 	
 	void Update() {
-		if (end) {
-			Debug.Log ("Moving offscreen");
-			foreach (whaleWithState w in whaleList) {
-				w.whale.GetComponent<ActionObject>().MoveTowardsTarget(offscreenPos);
-			}
-			GetComponent<LineGame>().enabled = false;
-//			GetComponent<Main>().enabled = true;
-		}
-		else {
-			//			audioIsPlaying = false;
-			foreach (whaleWithState w in whaleList) {
-				ActionObject script = w.whale.GetComponent<ActionObject>();
-				switch (w.state) {
-				case objectState.NORMAL:
-					/*kinectClickedOn, clickedPos*/
-					if (script.ClickedOn (clickedPos)) {
-						w.state = objectState.MOVINGTO;
-						script.MoveTowardsTarget(w.targetPos);
-						break;
-					}
-					break;
-				case objectState.MOVINGTO:
-					//print ("MOVING TO");
-					if (Utility.V3Equal(script.pos, w.targetPos)) {
-						lineCount++;
-						if (lineCount == numObjects) {
-							//all objects must dive
-//							music.PlayFeedback(music.neg);
-							foreach (whaleWithState item in whaleList) {
-								item.state = objectState.SHOULD_DIVE;
-							}
-						} 
-						else {
-							w.state = objectState.DONE;
-						}
-					}
-					break;
-				case objectState.SHOULD_DIVE:
-					//print ("DIVING");
-					w.diveTargetPos.x = w.targetPos.x - 0.5f;
-					w.diveTargetPos.y = w.targetPos.y - 1;
-					script.MoveTowardsTarget(w.diveTargetPos);
-					w.state = objectState.DIVING;
-					lineCount--;
-					break;
-				case objectState.DIVING:
-					//print ("IS DIVING");
-					if (Utility.V3Equal(script.pos, w.diveTargetPos)) {
-						lineCount++;
-						if (lineCount == numObjects) {
-							//all objects must dive
-							foreach (whaleWithState item in whaleList) {
-								item.state = objectState.RESTART;
-							}
-						} else {
-							w.state = objectState.DONE;
-						}
-					}
-					break;
-				case objectState.DONE:
-					break;
-				case objectState.RESTART:
-					Debug.Log ("RESTART");
-					foreach (whaleWithState item in whaleList) {
-						item.state = objectState.DONE;
-						lineCount--;
-					}
-					end = true;
-					/*
-					whalePos = script.GetRandomVector(8);
-					script.pos = whalePos;
-					script.targetLocation = whalePos;
-					w.state = objectState.NORMAL;
-					w.targetPos.y = 0;
-					lineCount--;
-					audioIsPlaying = false;
-					*/
+		foreach (whaleWithState w in whaleList) {
+			ActionObject script = w.whale.GetComponent<ActionObject>();
+			switch (w.state) {
+			case objectState.NORMAL:
+				/*kinectClickedOn, clickedPos*/
+				if (script.ClickedOn (clickedPos)) {
+					w.state = objectState.MOVINGTO;
+					script.MoveTowardsTarget(w.targetPos);
 					break;
 				}
+				break;
+			case objectState.MOVINGTO:
+				//print ("MOVING TO");
+				if (Utility.V3Equal(script.pos, w.targetPos)) {
+					lineCount++;
+					if (lineCount == numObjects) {
+						//all objects must dive
+						//							music.PlayFeedback(music.neg);
+						foreach (whaleWithState item in whaleList) {
+							item.state = objectState.SHOULD_DIVE;
+						}
+					} 
+					else {
+						w.state = objectState.DONE;
+					}
+				}
+				break;
+			case objectState.SHOULD_DIVE:
+				//print ("DIVING");
+				////w.diveTargetPos.x = w.targetPos.x - 0.5f;
+				//w.diveTargetPos.y = w.targetPos.y - 1;
+				//script.MoveTowardsTarget(w.diveTargetPos);
+				//w.whale.GetComponent<Animation>()["dive"].wrapMode=WrapMode.Once;
+				w.whale.GetComponent<Whale>().Dive();
+				//GetComponent<ActionObject>().shouldMove = false;
+				w.state = objectState.DIVING;
+				lineCount--;
+				break;
+			case objectState.DIVING:
+				print ("IS DIVING");
+				//if (Utility.V3Equal(script.pos, w.diveTargetPos)) {
+				if (!w.whale.GetComponent<Animation>().IsPlaying("dive")) {
+					Debug.Log ("Dive complete");
+					lineCount++;
+				}
+				if (lineCount == numObjects) {
+					//all objects must dive
+					foreach (whaleWithState item in whaleList) {
+						item.state = objectState.RESTART;
+					}
+				} 
+				//}
+				break;
+			case objectState.DONE:
+				break;
+			case objectState.RESTART:
+				Debug.Log ("RESTART");
+				//GetComponent<ActionObject>().shouldMove = true;
+				targetPos = new Vector3(2.7f,2.5f,0);
+				foreach (whaleWithState item in whaleList) {
+					lineCount = 0;
+					onscreenPos = Utility.GetRandomVector(2.5f, 7.5f, 0f, 5f);
+					item.whale.GetComponent<ActionObject>().MoveTowardsTarget(onscreenPos);
+					item.targetPos = targetPos;
+					targetPos.x = targetPos.x + 1.5f; //update x
+					item.state = objectState.NORMAL;
+				}
+				break;
 			}
 		}
 		//kinectClickedOn = false;
 	}
-	
-/*	void MoveOnScreen(GameObject g1,GameObject g2, GameObject g3, GameObject g4)
-	{
-		Vector3 v1 = Utility.GetRandomVector (8);
-		Vector3 v2 = Utility.GetRandomVector (8);
-		Vector3 v3 = Utility.GetRandomVector (8);
-		Vector3 v4 = Utility.GetRandomVector (8);
-		MoveHelper (g1, v1, g2, v2, g3, v3, g4, v4);
-	}
-	
-	void MoveOffScreen(GameObject g1, GameObject g2, GameObject g3, GameObject g4)
-	{
-		Vector3 v1 = Utility.GetRandomVector (14);
-		Vector3 v2 = Utility.GetRandomVector (14);
-		Vector3 v3 = Utility.GetRandomVector (14);
-		Vector3 v4 = Utility.GetRandomVector (14);
-		MoveHelper (g1, v1, g2, v2, g3, v3, g4, v4);
-	}
-	
-	void MoveHelper(GameObject g1, Vector3 v1, GameObject g2, Vector3 v2, GameObject g3, Vector3 v3, GameObject g4, Vector3 v4)
-	{
-		g1.GetComponent<ActionObject> ().MoveTowardsTarget(v1);
-		g2.GetComponent<ActionObject> ().MoveTowardsTarget(v2);
-		g3.GetComponent<ActionObject> ().MoveTowardsTarget(v3);
-		g4.GetComponent<ActionObject> ().MoveTowardsTarget(v4);
-	}*/
 	
 	//	void SetFeedbackAudio() {
 	//		if (!audioIsPlaying) {
