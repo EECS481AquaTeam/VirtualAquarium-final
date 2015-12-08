@@ -14,7 +14,7 @@ public class ProtectGame : MonoBehaviour {
 
 	private Vector3 targetPos = new Vector3(7.5f, 7.5f, Utility.Z);
 	public GameObject defender;
-	private int health = 10;
+	private int health;
 	
 	public GameObject[] attacks;
 	AttackerWithTarget[] attackers = new AttackerWithTarget[10];
@@ -24,31 +24,11 @@ public class ProtectGame : MonoBehaviour {
 	void Start() {
 		defender = Instantiate (defender);
 		Utility.InitializeFish (defender, targetPos, Utility.Z);
-		
-		for (int i = 0; i < attackers.Length; ++i) {
-			attackers [i] = new AttackerWithTarget (Instantiate (attacks [i]), targetPos);
-			
-			GameObject attacker = attackers [i].attacker;
 
-			float x = Random.Range(-48, 50);
-			float y = Mathf.Sqrt(50 * 50 - x * x);
+		RestartGame ();
 
-			if (x > 0)
-				// if y is a value that if it was negative would not make the object more
-				// than 30 degrees below the horizontal, then randomly flip the sign
-				if (y < 50 * Mathf.Sin(0.523599f))
-					y = (Random.value > 0.75) ? y : -y;
-			else if (x == 0)
-				y = 50;
-
-			x += targetPos.x;
-			y += targetPos.y;
-
-			Utility.InitializeFish (attacker, new Vector3 (x, y, Utility.Z), Random.Range (2, 10));
-			attacker.GetComponent<ActionObject> ().MakeUndestroyable ();
-		}
 	}
-	
+
 	void Update () {
 		bool attackersRemaining = false;
 		for (int i = 0; i < attackers.Length; ++i) {
@@ -64,8 +44,8 @@ public class ProtectGame : MonoBehaviour {
 			if (Utility.V3Equal (script.pos, attackers [i].target)) {
 				if (Utility.V3Equal (script.pos, targetPos)) {
 					--health;
-					print (string.Format ("Hit! {0} health remaining.", health));
 					Destroy (attacker);
+
 					attackers [i].attacker = null;
 				} else
 					attackers [i].target = targetPos;
@@ -82,16 +62,57 @@ public class ProtectGame : MonoBehaviour {
 		
 		if (health == 0) {
 			print ("Game over, attackers win!");
-			Destroy (defender);
+
 			foreach (AttackerWithTarget g in attackers) {
 				if (g.attacker)
 					Destroy (g.attacker);
 			}
-			enabled = false;
+
+			RestartGame();
+		}
+	}
+
+	private void RestartGame()
+	{
+		ResetHealth ();
+		ResetAttackers ();
+	}
+	
+	private void ResetHealth()
+	{
+		health = attackers.Length;
+	}
+	
+	private void ResetAttackers()
+	{
+		for (int i = 0; i < attackers.Length; ++i) {
+			attackers [i] = new AttackerWithTarget (Instantiate (attacks [i]), targetPos);
+			
+			GameObject attacker = attackers [i].attacker;
+			
+			float x = Random.Range (-48, 50);
+			float y = Mathf.Sqrt (50 * 50 - x * x);
+			
+			if (x > 0) {
+				// if y is a value that if it was negative would not make the object more
+				// than 30 degrees below the horizontal, then randomly flip the sign
+				if (y < 50 * Mathf.Sin (0.523599f)) {
+					y = (Random.value > 0.75) ? y : -y;
+				}
+			}
+			else if (x == 0) {
+				y = 50;
+			}
+			
+			x += targetPos.x;
+			y += targetPos.y;
+			
+			Utility.InitializeFish (attacker, new Vector3 (x, y, Utility.Z), Random.Range (2, 10));
+			attacker.GetComponent<ActionObject> ().MakeUndestroyable ();
 		}
 	}
 	
-	Vector3 GetNewTarget(ActionObject a)
+	private Vector3 GetNewTarget(ActionObject a)
 	{
 		Vector3 currentLocation = a.pos;
 		
