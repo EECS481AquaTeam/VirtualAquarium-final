@@ -20,10 +20,14 @@ public class ProtectGame : MonoBehaviour {
 	AttackerWithTarget[] attackers = new AttackerWithTarget[10];
 
 	public Vector3 clickedPos = new Vector3 (-100, -100, -100);
+
+	private AquariumMusic music;  // how this module plays music in the application
 	
 	void Start() {
 		defender = Instantiate (defender);
 		Utility.InitializeFish (defender, targetPos, Utility.Z);
+
+		music = GetComponent<AquariumMusic> ();
 
 		RestartGame ();
 
@@ -51,8 +55,10 @@ public class ProtectGame : MonoBehaviour {
 					attackers [i].target = targetPos;
 				
 			} else {
-				if (script.ClickedOn (clickedPos) && Utility.V3Equal (attackers [i].target, targetPos))
+				if (script.ClickedOn (clickedPos) && Utility.V3Equal (attackers [i].target, targetPos)) {
 					attackers [i].target = GetNewTarget (script); 
+					music.PlayPositiveFeedback();
+				}
 				script.MoveTowardsTarget (attackers [i].target);
 			}
 		}
