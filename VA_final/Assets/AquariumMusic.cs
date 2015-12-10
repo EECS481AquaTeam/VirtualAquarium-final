@@ -13,7 +13,7 @@ public class AquariumMusic : MonoBehaviour
 		AudioSource[] audios = GetComponents<AudioSource>();
 		background = audios[0];
 		positive =   audios[1];
-		negative =   audios [2];
+		negative =   audios[2];
 
 		background.loop = true;
 		positive.Stop ();

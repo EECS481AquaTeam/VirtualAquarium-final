@@ -15,6 +15,7 @@ public class ProtectGame : MonoBehaviour {
 	private Vector3 targetPos = new Vector3(7.5f, 7.5f, Utility.Z);
 	public GameObject defender;
 	private int health;
+	private bool gameStarted;
 	
 	public GameObject[] attacks;
 	AttackerWithTarget[] attackers = new AttackerWithTarget[10];
@@ -24,22 +25,26 @@ public class ProtectGame : MonoBehaviour {
 	private AquariumMusic music;  // how this module plays music in the application
 	
 	void Start() {
+		gameStarted = false;
+
 		defender = Instantiate (defender);
 		Utility.InitializeFish (defender, targetPos, Utility.Z);
 
 		music = GetComponent<AquariumMusic> ();
-
-		RestartGame ();
-
 	}
 
 	void Update () {
-		bool attackersRemaining = false;
+		if (!gameStarted) {
+			if (defender.GetComponent<ActionObject>().ClickedOn(clickedPos)) {
+				gameStarted = true;
+				RestartGame();
+			}
+			return;
+		}
+
 		for (int i = 0; i < attackers.Length; ++i) {
 			if (!attackers [i].attacker)
 				continue;
-			else
-				attackersRemaining = true;
 			
 			GameObject attacker = attackers [i].attacker;
 			
@@ -63,18 +68,18 @@ public class ProtectGame : MonoBehaviour {
 			}
 		}
 		
-		if (!attackersRemaining)
-			enabled = false;
-		
 		if (health == 0) {
 			print ("Game over, attackers win!");
 
+			music.PlayNegativeFeedback();
+
 			foreach (AttackerWithTarget g in attackers) {
-				if (g.attacker)
+				if (g.attacker) {
 					Destroy (g.attacker);
+				}
 			}
 
-			RestartGame();
+			gameStarted = false;
 		}
 	}
 
@@ -97,12 +102,12 @@ public class ProtectGame : MonoBehaviour {
 			GameObject attacker = attackers [i].attacker;
 			
 			float x = Random.Range (-48, 50);
-			float y = Mathf.Sqrt (50 * 50 - x * x);
+			float y = Mathf.Sqrt (50 * 50 - x * x) + Random.Range (0, 10);
 			
 			if (x > 0) {
 				// if y is a value that if it was negative would not make the object more
 				// than 30 degrees below the horizontal, then randomly flip the sign
-				if (y < 50 * Mathf.Sin (0.523599f)) {
+				if (y < 60 * Mathf.Sin (0.523599f)) {
 					y = (Random.value > 0.75) ? y : -y;
 				}
 			}
@@ -113,25 +118,22 @@ public class ProtectGame : MonoBehaviour {
 			x += targetPos.x;
 			y += targetPos.y;
 			
-			Utility.InitializeFish (attacker, new Vector3 (x, y, Utility.Z), Random.Range (2, 10));
+			Utility.InitializeFish (attacker, new Vector3 (x, y, Utility.Z), Random.Range (2, 6));
 			attacker.GetComponent<ActionObject> ().MakeUndestroyable ();
 		}
 	}
 	
 	private Vector3 GetNewTarget(ActionObject a)
 	{
-		Vector3 currentLocation = a.pos;
-		
-		if (currentLocation.x == targetPos.x) // In a vertical line
+		if (a.pos.x == targetPos.x) // In a vertical line
 			return new Vector3 (targetPos.x, 50+targetPos.y, Utility.Z);
-		else if (currentLocation.y == targetPos.y) // In a horizontal line
+		else if (a.pos.y == targetPos.y) // In a horizontal line
 			return new Vector3 (50+targetPos.x, targetPos.y, Utility.Z);
 
-		float slope = (targetPos.y - currentLocation.y) / (targetPos.x - currentLocation.x);
+		float slope = (targetPos.y - a.pos.y) / (targetPos.x - a.pos.x);
+		float diff = 20f;
 
-		float diff = 10f;
-
-		if (currentLocation.x < targetPos.x) // left
+		if (a.pos.x < targetPos.x) // left
 			return new Vector3 (targetPos.x - diff, targetPos.y - (slope * diff), Utility.Z);
 		else // right
 			return new Vector3 (targetPos.x + diff, targetPos.y + (slope * diff), Utility.Z);
