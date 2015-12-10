@@ -33,6 +33,9 @@ public class GrowingTeamGame : MonoBehaviour
 		Utility.InitializeFish (left, offscreenLeft);
 		Utility.InitializeFish (right, offscreenRight);
 
+		left.GetComponent<ActionObject> ().Glow (Color.white);
+		right.GetComponent<ActionObject> ().Glow (Color.white);
+
 		MoveOnScreen ();
 		
 		UpdateTime ();			 // set the initial time of the game
@@ -63,12 +66,17 @@ public class GrowingTeamGame : MonoBehaviour
 			ActionObject shrinker = (turnState == turn.RIGHT) ? left.GetComponent<ActionObject> () : right.GetComponent<ActionObject> ();
 			
 			// If the proper fish is clicked on, grow it
-			if (grower.ClickedOn (clickedPos))
+			if (grower.ClickedOn (clickedPos)) {
 				Grow (grower, (turnState == turn.LEFT) ? turn.RIGHT : turn.LEFT);
+				grower.UnGlow();
+				shrinker.Glow(Color.white);
+			}
 			
 			// If the improper whale is clicked on, shrink both whales
-			else if (shrinker.ClickedOn (clickedPos))
+			else if (shrinker.ClickedOn (clickedPos)) {
 				Shrink (grower, shrinker);
+				shrinker.Glow(Color.red);
+			}
 			
 			// If both of the fish are of the winning scale, the user wins!
 			if (WinningScale (grower) && WinningScale (shrinker)) {
@@ -85,10 +93,14 @@ public class GrowingTeamGame : MonoBehaviour
 			ActionObject right_ob = right.GetComponent<ActionObject> ();
 			
 			// Grow a fish if it is clicked on
-			if (left_ob.ClickedOn (clickedPos))
+			if (left_ob.ClickedOn (clickedPos)) {
 				Grow (left_ob, turn.RIGHT);
-			else if (right_ob.ClickedOn (clickedPos))
+				left_ob.UnGlow();
+			}
+			else if (right_ob.ClickedOn (clickedPos)) {
 				Grow (right_ob, turn.LEFT);
+				right_ob.UnGlow();
+			}
 		}
 		else if (turnState == turn.END) {}
 	}

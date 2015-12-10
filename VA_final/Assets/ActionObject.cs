@@ -17,9 +17,13 @@ public class ActionObject : MonoBehaviour {
 	
 	private bool destroyable = true;	   // If the object should be destroyed when it is outside the screen
 	private bool rotatable = true;		   // If the object should could be rotated
-	
+
+	private Light lt;
+
 	public virtual void Awake()
 	{
+		lt = GetComponent<Light> ();
+
 		targetLocation = pos = Utility.GetRandomVector (15);
 		speed = Random.Range (5,8);
 
@@ -67,6 +71,17 @@ public class ActionObject : MonoBehaviour {
 			Destroy (gameObject);
 			Debug.Log ("Object destroyed!");
 		}
+	}
+
+	public void Glow(Color c)
+	{
+		lt.enabled = true;
+		lt.color = c;
+	}
+
+	public void UnGlow()
+	{
+		lt.enabled = false;
 	}
 
 	// Sets the value of destroyable to false so that the object will not be destroyed when it is outside the camera
