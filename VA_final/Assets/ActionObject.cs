@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 public class ActionObject : MonoBehaviour {
 	
@@ -20,16 +21,24 @@ public class ActionObject : MonoBehaviour {
 
 	private Light lt;
 
+	private bool hadColor = false;
+	private Color lastColor;
+
+	private bool pulsing = false;
+	private DateTime lastPulse;
+	private Color pulseColor;
+	private int pulseTimes;
+
 	public virtual void Awake()
 	{
 		lt = GetComponent<Light> ();
 
-		targetLocation = pos = Utility.GetRandomVector (15);
-		speed = Random.Range (5,8);
+		targetLocation = pos = Utility.GetRandomVector (0,20,0,10);
+		speed = UnityEngine.Random.Range (5,8);
 
 		SetRotation ();
-
 		SetScale ();
+		UnGlow ();
 	}
 	
 	// to initialize the location of an object, call Insantiate(x); followed by x.Initialize(position, speed);
@@ -57,6 +66,8 @@ public class ActionObject : MonoBehaviour {
 			moving = false;
 		}
 
+		Pulse ();
+
 		// If the object isn't at its target rotation, rotate towards it
 		float rotationAngle = Quaternion.Angle (rotation, targetRotation);
 		if (!moving) {
@@ -73,10 +84,66 @@ public class ActionObject : MonoBehaviour {
 		}
 	}
 
-	public void Glow(Color c)
+	public void Pulse(Color c, int times, float _intensity=0.5f)
+	{
+		pulseColor = c;
+		lt.color = pulseColor;
+		pulseTimes = times;
+		lastPulse = DateTime.Now;
+
+		if (pulsing && lt.enabled) {
+			lastPulse = DateTime.Now;
+			return;
+		}
+
+		pulsing = true;
+
+		// save the previous color
+		if (lt.enabled) {
+			hadColor = true;
+			lastColor = lt.color;
+		} else if (!lt.enabled) {
+			lt.enabled = true;
+			hadColor = false;
+		}
+	}
+
+	private void Pulse()
+	{
+		if (!pulsing)
+			return;
+
+		double secondsPassed = (DateTime.Now - lastPulse).TotalSeconds;
+
+		if (secondsPassed < 0.5f) {
+			return;
+		} else if (secondsPassed < 1.0f) {
+			lt.enabled = false;
+			return;
+		} else {
+			lastPulse = DateTime.Now;
+
+			if (pulseTimes == 1) {
+				pulsing = false;
+				if (hadColor)
+					Glow (lastColor);
+				hadColor = false;
+				return;
+			}
+			if (pulseTimes > 1) {
+				--pulseTimes;
+			}
+			lt.enabled = true;
+		}
+	}
+
+	public void Glow(Color c, float _intensity=0.5f)
 	{
 		lt.enabled = true;
 		lt.color = c;
+		lt.intensity = _intensity;
+
+		pulsing = false;
 	}
 
 	public void UnGlow()
@@ -133,20 +200,27 @@ public class ActionObject : MonoBehaviour {
 	}
 
 	// Returns true if the object is clicked on by the mouse or by the Kinect
-	public bool ClickedOn(Vector3 clickedPos)
+	public bool ClickedOn()
 	{
 		// Kinect is enabled
 		if (Utility.kinectClickedOn) {
-			// Scale the position down to 1 by 1
-			Vector3 scaledPos = PositionOnScreen ();
-			scaledPos.x /= 10f;
-			scaledPos.y /= 10f;
+			if (Utility.pushingOnKinectOn) {
 
-			// If that position is pressed close to the object's position, return true
-			if (Vector3.Distance (scaledPos, clickedPos) < OBJECT_RADIUS) {
-				print ("Action object clicked on through Kinect");
-				print ("clickedLocation: " + clickedPos);
-				return true;
+				// Scale the position down to 1 by 1
+//				Vector3 scaledPos = PositionOnScreen ();
+//				scaledPos.x /= 10f;
+//				scaledPos.y /= 10f;
+				Vector3 scaledPos = new Vector3();
+				scaledPos.x = Utility.locationOfPush.x;
+				scaledPos.y = Utility.locationOfPush.y;
+				scaledPos.z = 10f;
+
+				// If that position is pressed close to the object's position, return true
+				if (Vector3.Distance (scaledPos, pos) < OBJECT_RADIUS) {
+					print ("Action object clicked on through Kinect");
+					print ("clickedLocation: " + pos);
+					return true;
+				}
 			}
 		}
 
@@ -158,18 +232,18 @@ public class ActionObject : MonoBehaviour {
 		return (Vector3.Distance (PositionOnScreen (), Input.mousePosition) < OBJECT_RADIUS);
 	}
 
-	private bool OutsideCamera(float shift = Utility.OFFSET)
+	private bool OutsideCamera(float shift = 10)
 	{
-		float max = 10 + shift;
-		float min = 0 - shift;
-		return (pos.x > max ||
-		        pos.x < min ||
-		        pos.y > max ||
-		        pos.y < min);
+//		float maxx = 20 + shift;
+//		float minx = 0 - shift;
+		return (pos.x > 20 + shift ||
+		        pos.x < -shift ||
+		        pos.y > 10 + shift ||
+		        pos.y < -shift);
 	}
 
 	// Sets the scale for each object based on the specfic prefab and how big it should be
-	private void SetScale()
+	public void SetScale()
 	{
 		switch (tag) {
 		case "whale":
@@ -204,7 +278,7 @@ public class ActionObject : MonoBehaviour {
 		
 		rotatedInPlace = true;
 		
-		float offset = Random.value > 0.5f ? -100f : 100f;
+		float offset = UnityEngine.Random.value > 0.5f ? -100f : 100f;
 		Vector3 temp = new Vector3(pos.x + offset, pos.y, pos.z) - pos;
 		directionOfMotion = temp - pos;
 		if (tag == "whale")

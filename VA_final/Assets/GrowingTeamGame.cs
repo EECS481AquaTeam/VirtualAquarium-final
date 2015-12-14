@@ -11,18 +11,16 @@ public class GrowingTeamGame : MonoBehaviour
 	
 	turn turnState = turn.START; // which fish should grow next? 
 
-	public Vector3 clickedPos = new Vector3 (-100, -100, -100);
-	
 	public GameObject left;		// the left fish in the game
 	public GameObject right;	// the right fish in the game
 
 	private DateTime last;		// the last time that a fish has grown or shrunk
 	
 	// locations for the fish on and off screen
-	private Vector3 offscreenLeft  = new Vector3 (-5f,   Y_VAL, Utility.Z);
-	private Vector3 offscreenRight = new Vector3 (15f,   Y_VAL, Utility.Z);
-	private Vector3 onscreenLeft   = new Vector3 (1.25f, Y_VAL, Utility.Z);
-	private Vector3 onscreenRight  = new Vector3 (8.75f, Y_VAL, Utility.Z);
+	private Vector3 offscreenLeft  = new Vector3 (-20f,   Y_VAL, Utility.Z);
+	private Vector3 offscreenRight = new Vector3 (40f,   Y_VAL, Utility.Z);
+	private Vector3 onscreenLeft   = new Vector3 (2.5f, Y_VAL, Utility.Z);
+	private Vector3 onscreenRight  = new Vector3 (17.5f, Y_VAL, Utility.Z);
 	
 	// Runs on the beginning of instantiation of this class
 	void Start() {
@@ -33,8 +31,8 @@ public class GrowingTeamGame : MonoBehaviour
 		Utility.InitializeFish (left, offscreenLeft);
 		Utility.InitializeFish (right, offscreenRight);
 
-		left.GetComponent<ActionObject> ().Glow (Color.white);
-		right.GetComponent<ActionObject> ().Glow (Color.white);
+		left.GetComponent<ActionObject> ().MakeUndestroyable ();
+		right.GetComponent<ActionObject> ().MakeUndestroyable ();
 
 		MoveOnScreen ();
 		
@@ -52,6 +50,9 @@ public class GrowingTeamGame : MonoBehaviour
 	// Runs once per frame
 	void Update()
 	{
+		if (Utility.V3Equal (left.GetComponent<ActionObject>  ().pos, offscreenLeft) &&
+			Utility.V3Equal (right.GetComponent<ActionObject> ().pos, offscreenRight))
+			MoveOnScreen ();
 		
 		// If it hasn't been half a second since the last action, don't do anything
 		if ((DateTime.Now - last).TotalSeconds < 0.5f)
@@ -66,16 +67,16 @@ public class GrowingTeamGame : MonoBehaviour
 			ActionObject shrinker = (turnState == turn.RIGHT) ? left.GetComponent<ActionObject> () : right.GetComponent<ActionObject> ();
 			
 			// If the proper fish is clicked on, grow it
-			if (grower.ClickedOn (clickedPos)) {
+			if (grower.ClickedOn ()) {
 				Grow (grower, (turnState == turn.LEFT) ? turn.RIGHT : turn.LEFT);
 				grower.UnGlow();
 				shrinker.Glow(Color.white);
 			}
 			
 			// If the improper whale is clicked on, shrink both whales
-			else if (shrinker.ClickedOn (clickedPos)) {
+			else if (shrinker.ClickedOn ()) {
 				Shrink (grower, shrinker);
-				shrinker.Glow(Color.red);
+				shrinker.Pulse(Color.red, 2);
 			}
 			
 			// If both of the fish are of the winning scale, the user wins!
@@ -93,11 +94,11 @@ public class GrowingTeamGame : MonoBehaviour
 			ActionObject right_ob = right.GetComponent<ActionObject> ();
 			
 			// Grow a fish if it is clicked on
-			if (left_ob.ClickedOn (clickedPos)) {
+			if (left_ob.ClickedOn ()) {
 				Grow (left_ob, turn.RIGHT);
 				left_ob.UnGlow();
 			}
-			else if (right_ob.ClickedOn (clickedPos)) {
+			else if (right_ob.ClickedOn ()) {
 				Grow (right_ob, turn.LEFT);
 				right_ob.UnGlow();
 			}
@@ -115,11 +116,24 @@ public class GrowingTeamGame : MonoBehaviour
 	
 	void MoveOnScreen()
 	{
+		turnState = turn.START;
+
+		ActionObject leftA  = left.GetComponent<ActionObject> ();
+		ActionObject rightA = right.GetComponent<ActionObject> ();
+
+		leftA.Glow (Color.white);
+		rightA.Glow (Color.white);
+
+		leftA.SetScale ();
+		rightA.SetScale ();
+
 		Utility.MoveHelper (left, onscreenLeft, right, onscreenRight);
 	}
 	
 	void MoveOffScreen()
 	{
+		left.GetComponent<ActionObject>  ().UnGlow ();
+		right.GetComponent<ActionObject> ().UnGlow ();
 		Utility.MoveHelper (left, offscreenLeft, right, offscreenRight);
 	}
 	

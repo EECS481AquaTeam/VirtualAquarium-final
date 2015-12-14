@@ -29,9 +29,7 @@ public class LineGame : MonoBehaviour {
 	public Vector3 onscreenPos;
 	
 	//	private AquariumMusic music;  // how this module plays music in the application
-	
-	public Vector3 clickedPos = new Vector3 (-100, -100, -100); //kevin
-	//public bool kinectClickedOn = false;
+
 	
 	public Vector3 whalePos;
 	
@@ -63,8 +61,7 @@ public class LineGame : MonoBehaviour {
 			ActionObject script = w.whale.GetComponent<ActionObject>();
 			switch (w.state) {
 			case objectState.NORMAL:
-				/*kinectClickedOn, clickedPos*/
-				if (script.ClickedOn (clickedPos)) {
+				if (script.ClickedOn ()) {
 					w.state = objectState.MOVINGTO;
 					script.MoveTowardsTarget(w.targetPos);
 					break;

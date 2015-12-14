@@ -12,30 +12,29 @@ public class AttackerWithTarget {
 
 public class ProtectGame : MonoBehaviour {
 
-	private Vector3 targetPos = new Vector3(7.5f, 7.5f, Utility.Z);
+	private Vector3 targetPos = new Vector3(15f, 7.5f, Utility.Z);
 	public GameObject defender;
 	private int health;
-	private bool gameStarted;
+	private bool gameStarted = false;
 	
 	public GameObject[] attacks;
 	AttackerWithTarget[] attackers = new AttackerWithTarget[10];
 
-	public Vector3 clickedPos = new Vector3 (-100, -100, -100);
-
 	private AquariumMusic music;  // how this module plays music in the application
 	
 	void Start() {
-		gameStarted = false;
-
 		defender = Instantiate (defender);
 		Utility.InitializeFish (defender, targetPos, Utility.Z);
+
+		defender.GetComponent<ActionObject> ().Glow (Color.white);
 
 		music = GetComponent<AquariumMusic> ();
 	}
 
 	void Update () {
+		ActionObject defenderScript = defender.GetComponent<ActionObject>();
 		if (!gameStarted) {
-			if (defender.GetComponent<ActionObject>().ClickedOn(clickedPos)) {
+			if (defenderScript.ClickedOn()) {
 				gameStarted = true;
 				RestartGame();
 			}
@@ -52,6 +51,8 @@ public class ProtectGame : MonoBehaviour {
 			
 			if (Utility.V3Equal (script.pos, attackers [i].target)) {
 				if (Utility.V3Equal (script.pos, targetPos)) {
+					defenderScript.Pulse(Color.red, 1);
+
 					--health;
 					Destroy (attacker);
 
@@ -60,7 +61,7 @@ public class ProtectGame : MonoBehaviour {
 					attackers [i].target = targetPos;
 				
 			} else {
-				if (script.ClickedOn (clickedPos) && Utility.V3Equal (attackers [i].target, targetPos)) {
+				if (script.ClickedOn () && Utility.V3Equal (attackers [i].target, targetPos)) {
 					attackers [i].target = GetNewTarget (script); 
 					music.PlayPositiveFeedback();
 				}
@@ -78,6 +79,7 @@ public class ProtectGame : MonoBehaviour {
 					Destroy (g.attacker);
 				}
 			}
+			defenderScript.Glow (Color.white);
 
 			gameStarted = false;
 		}
@@ -85,6 +87,7 @@ public class ProtectGame : MonoBehaviour {
 
 	private void RestartGame()
 	{
+		defender.GetComponent<ActionObject>().UnGlow();
 		ResetHealth ();
 		ResetAttackers ();
 	}
@@ -101,8 +104,8 @@ public class ProtectGame : MonoBehaviour {
 			
 			GameObject attacker = attackers [i].attacker;
 			
-			float x = Random.Range (-48, 50);
-			float y = Mathf.Sqrt (50 * 50 - x * x) + Random.Range (0, 10);
+			float x = Random.Range (-33, 65);
+			float y = Mathf.Sqrt (65 * 65 - x * x) + Random.Range (0, 10);
 			
 			if (x > 0) {
 				// if y is a value that if it was negative would not make the object more
